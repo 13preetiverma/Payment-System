@@ -53,7 +53,7 @@ paypal project.drawio
 
 | Service                 | Port |
 | ----------------------- | ---- |
-| Eureka Server           | 8087 |
+| Eureka Server           | 8761 |
 | Validation Service      | 8081 |
 | Processing Service      | 8082 |
 | PayPal Provider Service | 8083 |
@@ -108,17 +108,14 @@ paypal-payment-system/
 * Docker Compose
 * Git
 
-Verify installation:
-
-```bash
-java -version
-mvn -version
-docker --version
-```
-
 ---
 
 # Environment Configuration
+## Steps to get clientId & clientScrete
+* go to https://developer.paypal.com 
+* Sign up
+* go to dashboard then Apps & Credential
+* you can seen clentId and secret
 
 Create a file named:
 
@@ -126,20 +123,9 @@ Create a file named:
 .env
 ```
 
-using the sample:
-
-```text
-.env.example
-```
-
 Example:
 
 ```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=payments_db
-DB_USERNAME=root
-DB_PASSWORD=password
 
 PAYPAL_CLIENT_ID=YOUR_CLIENT_ID
 PAYPAL_CLIENT_SECRET=YOUR_SECRET
