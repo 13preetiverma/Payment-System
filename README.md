@@ -38,7 +38,7 @@ PayPal -> Provider -> Processing -> Validation -> Merchant
 
 | Service                 | Responsibility                          |
 | ----------------------- | --------------------------------------- |
-| Eureka Server           | Load Balancing |
+| Eureka Server           | Load Balancing                          |
 | Validation Service      | Validates incoming requests             |
 | Processing Service      | Coordinates payment processing          |
 | PayPal Provider Service | Communicates with PayPal APIs           |
@@ -133,33 +133,10 @@ PAYPAL_CLIENT_SECRET=YOUR_SECRET
 
 ---
 
-# MySQL Setup
-
-Create database:
-
-```sql
-CREATE DATABASE payments_db;
-```
-
-Optional user creation:
-
-```sql
-CREATE USER 'payments_user'@'localhost'
-IDENTIFIED BY 'payments_password';
-
-GRANT ALL PRIVILEGES
-ON payments_db.*
-TO 'payments_user'@'localhost';
-
-FLUSH PRIVILEGES;
-```
-
----
-
 # Running the Project
 
 ## Build
-
+### For each Microservice :
 ```bash
 mvn clean package
 ```
@@ -187,38 +164,10 @@ docker-compose down
 ```
 
 ---
+## Application Flow:
 
-## Run Manually
+<img width="933" height="574" alt="paypal project drawio" src="https://github.com/user-attachments/assets/6cd9d3eb-f549-4dce-932d-5effb259241c" />
 
-### Eureka Service
-
-```bash
-cd Eureka-service
-mvn spring-boot:run
-```
-
-### Validation Service
-
-```bash
-cd validation-service
-mvn spring-boot:run
-```
-
-### Processing Service
-
-```bash
-cd processing-service
-mvn spring-boot:run
-```
-
-### PayPal Provider Service
-
-```bash
-cd paypal-provider-service
-mvn spring-boot:run
-```
-
----
 
 # API Endpoints
 
@@ -227,20 +176,20 @@ mvn spring-boot:run
 ### Request
 
 ```http
-POST /payments/create
+[POST /payments/create](http://localhost:8081/validation/createPayment)
 ```
 
 ### Sample Request
 
 ```json
 {
-  "userId": 111,
+  "userId":302,
   "paymentMethodId": 1,
   "providerId": 1,
   "paymentTypeId": 1,
-  "amount": 70.00,
+  "amount": 100.5,
   "currency": "USD",
-  "merchantTransactionReference": "TXN-555"
+  "merchantTransactionReference": "TXN-101"
 }
 ```
 
@@ -248,21 +197,23 @@ POST /payments/create
 
 ```json
 {
-  "status": "SUCCESS",
-  "transactionId": "PAYPAL-12345",
-  "message": "Payment processed successfully"
+    "txnReference": "bd127164-7fd4-4722-9c35-9ab2042b027b",
+    "txnStatusId": 3,
+    "redirectUrl": "https://www.sandbox.paypal.com/checkoutnow?token=2W34390202916212B",
+    "providerReference": "2W34390202916212B"
 }
 ```
 
 ---
 
-## Get Payment Status
+## Complete Payment
 
 ### Request
 
 ```http
-GET /payments/{transactionId}
+[GET /payments/{transactionId}](http://localhost:8081/validation/{txnReference}/completePayment)
 ```
+put txnReference received from create payment call.
 
 ### Sample Response
 
@@ -295,34 +246,13 @@ Example Error Response:
 
 ```json
 {
-  "status": "FAILED",
-  "errorCode": "VALIDATION_ERROR",
-  "message": "paymentMethodId must be 1"
+    "errorCode": "30009",
+    "errorMessage": "Invalid URL. Please check and try again."
 }
 ```
 
 ---
 
-# Security
-
-The following files should never be committed:
-
-```gitignore
-.env
-application.properties
-application-dev.properties
-```
-
-Secrets such as:
-
-* Database Passwords
-* PayPal Client IDs
-* PayPal Secrets
-* API Keys
-
-must be supplied through environment variables.
-
----
 
 # Testing
 
@@ -341,30 +271,15 @@ mvn verify
 ---
 
 # Future Enhancements
-
+* Frontend Implemtation
 * Stripe Integration
 * Kafka Event Processing
-* Redis Caching
-* API Gateway
-* Service Discovery
 * JWT Authentication
 * Kubernetes Deployment
 * AWS Deployment
 
 ---
 
-# Troubleshooting
-
-## Port Already In Use
-
-Windows:
-
-```cmd
-netstat -ano | findstr :8080
-taskkill /PID <PID> /F
-```
-
----
 
 ## Docker Logs
 
