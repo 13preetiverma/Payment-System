@@ -9,14 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.mycomp.payments.constant.Constant;
 import com.mycomp.payments.http.HttpRequest;
 import com.mycomp.payments.http.HttpServiceEngine;
 import com.mycomp.payments.paypal.res.PaypalOAuthToken;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import tools.jackson.databind.ObjectMapper;
 
 @Service
 @Slf4j
@@ -30,6 +34,9 @@ private final ObjectMapper objectMapper;
 	//TODO, implement Redis based and take care of expiry
 	private static String accessToken; 
 	
+	@Value("${mytestkey:NOT_FOUND}")
+	private String testKey;
+
 	@Value("${paypal.client.id}")
 	private String clientId;
 	
@@ -70,11 +77,24 @@ private final ObjectMapper objectMapper;
 		
 		String tokenBody = response.getBody();
 		
-		PaypalOAuthToken token = objectMapper.readValue(
-				tokenBody, PaypalOAuthToken.class);
+		PaypalOAuthToken token = null;
+		try {
+			token = objectMapper.readValue(
+					tokenBody, PaypalOAuthToken.class);
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		log.info("Parsed OAuth token response: {}", token);
 		return token.getAccessToken();
 	}
 
+	@PostConstruct
+	public void init() {
+	    System.out.println("TEST KEY = " + testKey);
+	}
 }
