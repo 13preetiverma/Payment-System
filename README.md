@@ -58,6 +58,12 @@ paypal project.drawio
 | Processing Service      | 8082 |
 | PayPal Provider Service | 8083 |
 
+## Application Flow:
+
+<img width="933" height="574" alt="paypal project drawio" src="https://github.com/user-attachments/assets/6cd9d3eb-f549-4dce-932d-5effb259241c" />
+
+
+
 
 ---
 
@@ -164,10 +170,6 @@ docker-compose down
 ```
 
 ---
-## Application Flow:
-
-<img width="933" height="574" alt="paypal project drawio" src="https://github.com/user-attachments/assets/6cd9d3eb-f549-4dce-932d-5effb259241c" />
-
 
 # API Endpoints
 
@@ -304,8 +306,3 @@ Priti Verma
 
 Java Backend Developer | Spring Boot | Microservices | Docker
 
----
-
-# License
-
-This project is for educational and learning purposes.
