@@ -32,13 +32,21 @@
 	<profiles>
 		<profile>
 			<id>local</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+			
 			<properties>
 				<spring.profiles.active>local</spring.profiles.active>
 				<logging.path>
 					D:\\logs\\my-payment-validation-service</logging.path>
+			</properties>
+		</profile>
+		<profile>
+			<id>docker</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>docker</spring.profiles.active>
+				<logging.path>/var/lib/tomcat/logs/cpt/my-payment-validation-service</logging.path>
 			</properties>
 		</profile>
 		<profile>
