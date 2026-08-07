@@ -41,9 +41,7 @@
 	<profiles>
 		<profile>
 			<id>local</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+			
 			<properties>
 				<spring.profiles.active>local</spring.profiles.active>
 				<logging.path>
@@ -52,7 +50,9 @@
 		</profile>
 		<profile>
 			<id>docker</id>
-			
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<properties>
 				<spring.profiles.active>docker</spring.profiles.active>
 				<logging.path>/var/lib/tomcat/logs/cpt/paypal-provider-service</logging.path>
