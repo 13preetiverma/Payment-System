@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  
+  eureka:
+    build: ./Eureka-Service-Registry
+    container_name: eureka-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8761:8761"
+    restart: always
 
   mysql:
     image: mysql:8.0
