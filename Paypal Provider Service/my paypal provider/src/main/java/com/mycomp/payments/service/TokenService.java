@@ -9,16 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.mycomp.payments.constant.Constant;
 import com.mycomp.payments.http.HttpRequest;
 import com.mycomp.payments.http.HttpServiceEngine;
 import com.mycomp.payments.paypal.res.PaypalOAuthToken;
+import com.mycomp.payments.util.JsonUtil;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,27 +23,34 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TokenService {
 	
-private final HttpServiceEngine httpServiceEngine;
+	private static final int REDIS_ACCESS_TOKEN_EXPIRY_DIFF = 60;
 
-private final ObjectMapper objectMapper;
-	
-	//TODO, implement Redis based and take care of expiry
-	private static String accessToken; 
-	
-	@Value("${mytestkey:NOT_FOUND}")
-	private String testKey;
+	private static final String PAYPAL_ACCESS_TOKEN = "PAYPAL_ACCESS_TOKEN";
 
+	private final HttpServiceEngine httpServiceEngine;
+	
 	@Value("${paypal.client.id}")
 	private String clientId;
 	
 	@Value("${paypal.client.secret}")
 	private String clientSecret;
 
-	@Value("${paypal.oauth.url}")
+	@Value("${paypal.oauth.url}")  
 	private String outhUrl;
 	
+	private final JsonUtil jsonUtil;
+	
+	private final RedisService redisService;
+	
+	/**
+	 * 
+	 * @return access token string
+	 */
 	public String getAccessToken() {
 		log.info("Retrieving access token from TokenService");
+		
+		String accessToken = redisService.getValue(PAYPAL_ACCESS_TOKEN);
+		log.info("Access token from Redis: {}", accessToken);
 		
 		if (accessToken != null) {
 			log.info("Returning cached access token");
@@ -77,24 +80,20 @@ private final ObjectMapper objectMapper;
 		
 		String tokenBody = response.getBody();
 		
-		PaypalOAuthToken token = null;
-		try {
-			token = objectMapper.readValue(
-					tokenBody, PaypalOAuthToken.class);
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		PaypalOAuthToken token = jsonUtil.fromJson(
+				tokenBody, PaypalOAuthToken.class);
 		
-		log.info("Parsed OAuth token response: {}", token);
-		return token.getAccessToken();
+		accessToken = token.getAccessToken();
+		
+		// Cache the access token in Redis with expiry time
+		redisService.setValueWithExpiry(
+				PAYPAL_ACCESS_TOKEN, 
+				accessToken, 
+				token.getExpiresIn() - REDIS_ACCESS_TOKEN_EXPIRY_DIFF); // subtracting 60 seconds as buffer
+		
+		log.info("Caching access token for future use");
+		
+		return accessToken;
 	}
 
-	@PostConstruct
-	public void init() {
-	    System.out.println("TEST KEY = " + testKey);
-	}
 }
